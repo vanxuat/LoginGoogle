@@ -34,7 +34,15 @@ passport.use(
             }
             else{
               user.create({googleid:profile.id,email:profile.emails[0].value,name:profile.displayName})
-              .then((use)=>{console.log(use)})
+              .then((use)=>{
+                  const {googleid,email,name}=use.dataValues
+                    const newuser={googleid,email,name}
+                    console.log(newuser);
+
+                    return done(null,newuser);
+              
+              
+              })
               .catch(err=>console.log(err+''));
             }
           })
@@ -56,7 +64,7 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser((id, done) => {
-  User.findById(id)
+  user.findById(id)
     .then(user => {
       done(null, user);
     })
@@ -70,13 +78,13 @@ app.get(
     passport.authenticate('google', {
       scope: ['profile', 'email']
     }),(req,res)=>{
-      console.log(req)
+      //console.log(req)
     }
 );
 
   app.get('/auth/google/callback', passport.authenticate('google'),(req,res)=>{
     console.log("phan req cua callback")
-    console.log(req)
+    //console.log(req)
   });
 
 
