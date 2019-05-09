@@ -9,14 +9,14 @@ const db=require("./config/db");
 const user=require("./models/users")
 const cookieSession=require("cookie-session")
 
-// app.use(
-//   cookieSession({
-//     maxAge: 30 * 24 * 60 * 60 * 1000,
-//     keys: [keys.cookieKey]
-//   })
-// );
-// app.use(passport.initialize());
-// app.use(passport.session());
+app.use(
+  cookieSession({
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    keys: [keys.cookieKey]
+  })
+);
+app.use(passport.initialize());
+app.use(passport.session());
 
 
 passport.use(
@@ -27,9 +27,23 @@ passport.use(
         callbackURL: '/auth/google/callback'
       },
       ( accessToken, refreshToken, profile, done) => {
-       
-        console.log(accessToken);
-        console.log(profile);
+        if(profile.id){
+          user.findOne({where:{googleid:profile.id}}).then(us=>{
+            if(us){
+              return done(null,us);
+            }
+            else{
+              user.create({googleid:profile.id,email:profile.emails[0].value,name:profile.displayName})
+              .then((use)=>{console.log(use)})
+              .catch(err=>console.log(err+''));
+            }
+          })
+         
+
+        }
+
+       // console.log(profile)
+        
        
        
       }
@@ -37,16 +51,16 @@ passport.use(
 );
 
 
-// passport.serializeUser((user, done) => {
-//   done(null, user.id);
-// });
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
 
-// passport.deserializeUser((id, done) => {
-//   User.findById(id)
-//     .then(user => {
-//       done(null, user);
-//     })
-// });
+passport.deserializeUser((id, done) => {
+  User.findById(id)
+    .then(user => {
+      done(null, user);
+    })
+});
 
 
 
